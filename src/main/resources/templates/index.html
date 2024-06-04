@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QR코드 테스트</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $('#signUp').click(function (){
+                var param = {
+                    userId : $('#userId').val(),
+                    userPw : $('#userPw').val(),
+                    userName : $('#userName').val(),
+                }
+                ajax(param, '/signUp');
+            });
+            $('#signIn').click(function (){
+                var param = {
+                    userId : $('#userId').val(),
+                    userPw : $('#userPw').val(),
+                }
+                ajax(param, '/signIn');
+            });
+            $('#getQrCode').click(function (){
+                $.ajax({
+                    type: 'POST',
+                    url: '/getOtpQRCode',
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function(response) {
+                        if(response.resultCode == '1') {
+                            QRCode.toCanvas(document.getElementById('qrcode'), response.resultMessage, function (error) {
+                                if (error) {
+                                    console.error(error);
+                                    return;
+                                }
+                            })
+                        }else{
+                            alert(response.resultMessage);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Error: ' + error);
+                    }
+                });
+            });
+            $('#checkQrCode').click(function (){
+                var param = {
+                    otp : $('#otp').val(),
+                }
+                ajax(param, '/checkOtpCode');
+            });
+        });
+
+        function ajax(param, url){
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: JSON.stringify(param),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(response) {
+                    alert(response.resultMessage);
+                },
+                error: function(xhr, status, error) {
+                    alert('Error: ' + error);
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <input id="userId" type="text" name="userId" placeholder="ID">
+    <input id="userPw" type="password" name="userPw" placeholder="PW">
+    <input id="userName" type="text" name="userName" placeholder="name">
+    <button id="signUp">회원가입</button>
+    <button id="signIn">로그인</button>
+    <button id="getQrCode">OTP QR 발급</button>
+    <input id="otp" type="text" name="userName" placeholder="OTP">
+    <button id="checkQrCode">OTP 검증</button>
+    <canvas id="qrcode"></canvas>
+</body>
+</html>
